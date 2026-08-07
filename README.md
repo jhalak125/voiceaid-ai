@@ -25,9 +25,6 @@ voiceaid-ai/
 │   ├── index.html          ← Single page app
 │   ├── styles.css          ← Dark glassmorphism UI
 │   └── app.js              ← Audio recording + WAV encoder + API
-├── docs/
-│   ├── Team_Documentation.md
-│   └── PPT_Content.md
 └── README.md
 ```
 
