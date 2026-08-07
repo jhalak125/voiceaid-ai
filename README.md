@@ -15,38 +15,6 @@
 ## ✅ Solution
 VoiceAid AI fine-tunes OpenAI Whisper on the **TORGO dysarthric speech dataset**, reducing WER from **78% → 38%** — a 51% improvement.
 
-## 🚀 Quick Start
-
-### 1. Clone the repo
-```bash
-git clone https://github.com/YOUR_USERNAME/voiceaid-ai.git
-cd voiceaid-ai
-```
-
-### 2. Install dependencies
-```bash
-cd backend
-pip3 install -r requirements.txt
-```
-
-### 3. Start backend (Terminal 1)
-```bash
-cd backend
-python3 -m uvicorn main:app --reload --port 8001
-```
-> First run downloads Whisper model (~72MB for tiny, ~244MB for small)
-
-### 4. Start frontend (Terminal 2)
-```bash
-cd frontend
-python3 -m http.server 3000
-```
-
-### 5. Open the app
-**http://localhost:3000**
-
----
-
 ## 📁 Project Structure
 ```
 voiceaid-ai/
@@ -142,26 +110,3 @@ voiceaid-ai/
 ```
 
 ---
-
-## 🔬 Fine-tuning (Advanced)
-
-To fine-tune on TORGO yourself:
-1. Download TORGO dataset
-2. Run preprocessing: `python3 scripts/preprocess.py`
-3. Run fine-tuning: `python3 scripts/finetune.py`
-4. Evaluate: `python3 scripts/evaluate.py`
-
-See `docs/Team_Documentation.md` for full details.
-
----
-
-## 🏆 Hackathon
-**Event:** ML Bubble Hackathon 2026
-**Track:** TE-BE (Advanced)
-**Domain:** Healthcare & Medical Technology
-**Team:** [Your Team Name]
-
----
-
-## 📄 License
-MIT License — free to use, modify, and distribute.
