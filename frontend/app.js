@@ -3,7 +3,8 @@
    Handles: mic recording, waveform, API calls, history, UI state
 ───────────────────────────────────────────────────────────── */
 
-const API_BASE = window.VOICEAID_API_URL || "http://localhost:8001";
+// Resolve API URL: Priority -> localStorage > window.VOICEAID_API_URL > localhost
+let API_BASE = localStorage.getItem("voiceaid_api_url") || window.VOICEAID_API_URL || "http://localhost:8001";
 
 
 // ── DOM References ─────────────────────────────────────────────
@@ -49,10 +50,14 @@ let sessionHistory   = [];
 
 const ctx = waveformCanvas.getContext("2d");
 
-// ── Health Check ───────────────────────────────────────────────
+// ── Health Check with Render Cold-Start Resilience ────────────
+let healthCheckTimer = null;
+
 async function checkHealth() {
+  statusText.textContent = "Connecting...";
   try {
-    const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(4000) });
+    // 30-second timeout for Render free-tier cold starts
+    const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(30000) });
     if (res.ok) {
       statusDot.classList.add("online");
       statusText.textContent = "API Online";
