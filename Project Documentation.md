@@ -6,6 +6,8 @@
 * **Domain:** Healthcare & Medical Technology
 * **Lead Developer:** Jhalak Verma
 * **Repository:** [https://github.com/jhalak125/voiceaid-ai](https://github.com/jhalak125/voiceaid-ai)
+* **Deployed Backend:**[https://voiceaid-ai.onrender.com/](https://voiceaid-ai.onrender.com/)
+* **Deployed Website:**[(https://voiceaid-ai.vercel.app/)](https://voiceaid-ai.vercel.app/)
 
 ---
 
@@ -59,8 +61,8 @@ Rather than training an acoustic model from scratch with limited clinical data (
                                          │
                    ┌─────────────────────┴─────────────────────┐
                    │               ENCODER (6 Layers)          │
-                   │  • 2× Conv1D (Stride 2 Downsampling)       │
-                   │  • Sinusoidal Positional Embeddings        │
+                   │  • 2× Conv1D (Stride 2 Downsampling)      │
+                   │  • Sinusoidal Positional Embeddings       │
                    │  • Multi-Head Self-Attention + LayerNorm  │
                    │  • Hidden State Representation: [T × 512] │
                    └─────────────────────┬─────────────────────┘
@@ -124,7 +126,7 @@ Training end-to-end models on small clinical datasets typically results in **cat
 Phase 1: Encoder Frozen (Epochs 1–10)
 ┌─────────────────────────┐          ┌─────────────────────────┐
 │     ENCODER WEIGHTS     │ ──▶──▶── │     DECODER WEIGHTS     │
-│       [ LOCKED 🔒 ]      │          │     [ TRAINABLE 🔓 ]     │
+│       [ LOCKED 🔒 ]     │          │     [ TRAINABLE 🔓 ]     │
 └─────────────────────────┘          └─────────────────────────┘
   Preserves 680k hrs base              Adapts linguistic tokens
   acoustic representations             to dysarthric patterns
@@ -132,7 +134,7 @@ Phase 1: Encoder Frozen (Epochs 1–10)
 Phase 2: Full End-to-End Fine-Tuning (Epochs 11–15)
 ┌─────────────────────────┐          ┌─────────────────────────┐
 │     ENCODER WEIGHTS     │ ──▶──▶── │     DECODER WEIGHTS     │
-│  [ TRAINABLE @ 1e-5 🔓 ] │          │  [ TRAINABLE @ 1e-5 🔓 ] │
+│  [ TRAINABLE @ 1e-5 🔓 ]│          │  [ TRAINABLE @ 1e-5 🔓 ] │
 └─────────────────────────┘          └─────────────────────────┘
   Gently calibrates Conv1D            Joint optimization with
   filters to resonant shifts          cosine annealing schedule
@@ -190,7 +192,7 @@ To transition from a research notebook to a functional assistive application, we
 ┌────────────────────────────────────────────────────────────────────────┐
 │                          CLIENT-SIDE BROWSER                           │
 │  • HTML5 / CSS3 Glassmorphism Assistive Interface                      │
-│  • Web Audio API AudioContext: Decodes WebM float arrays                │
+│  • Web Audio API AudioContext: Decodes WebM float arrays               │
 │  • Native JavaScript Linear 16-Bit PCM WAV Encoder (No FFmpeg Needed)  │
 │  • HTML5 Canvas Real-Time Oscilloscope Visualizer                      │
 └───────────────────────────────────┬────────────────────────────────────┘
