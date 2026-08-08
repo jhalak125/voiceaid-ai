@@ -3,7 +3,8 @@
    Handles: mic recording, waveform, API calls, history, UI state
 ───────────────────────────────────────────────────────────── */
 
-const API_BASE = "http://localhost:8001";
+const API_BASE = window.VOICEAID_API_URL || "http://localhost:8001";
+
 
 // ── DOM References ─────────────────────────────────────────────
 const recordBtn       = document.getElementById("record-btn");

@@ -25,8 +25,8 @@ app.add_middleware(
 )
 
 # ── Load Whisper Model (loads once at startup) ─────────────────────────────────
-# Use "tiny" for fast demo (~39MB). Upgrade to "small" or "medium" for better accuracy.
-MODEL_SIZE = "tiny"   # Options: tiny | base | small | medium | large
+# tiny=fast demo | small=production (244MB) | medium=best accuracy
+MODEL_SIZE = os.getenv("MODEL_SIZE", "small")
 print(f"⏳ Loading Whisper model ({MODEL_SIZE})...")
 model = whisper.load_model(MODEL_SIZE)
 print("✅ Whisper model loaded!")
