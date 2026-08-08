@@ -1,19 +1,18 @@
 import io
 import os
-import tempfile
 import time
 import numpy as np
 import soundfile as sf
-import whisper
+from faster_whisper import WhisperModel
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-# ── App Setup ─────────────────────────────────────────────────────────────────
+# ── App Setup ──────────────────────────────────────────────────────────────────
 app = FastAPI(
     title="Dysarthria Speech Aid API",
-    description="ASR backend using OpenAI Whisper for speech-impaired users",
-    version="1.0.0",
+    description="ASR backend using Faster-Whisper for speech-impaired users",
+    version="2.0.0",
 )
 
 app.add_middleware(
@@ -24,12 +23,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Load Whisper Model (loads once at startup) ─────────────────────────────────
-# tiny=fast demo | small=production (244MB) | medium=best accuracy
-MODEL_SIZE = os.getenv("MODEL_SIZE", "small")
-print(f"⏳ Loading Whisper model ({MODEL_SIZE})...")
-model = whisper.load_model(MODEL_SIZE)
-print("✅ Whisper model loaded!")
+# ── Load Faster-Whisper Model ──────────────────────────────────────────────────
+# faster-whisper: no torch, no ffmpeg, no pkg_resources issues!
+# Uses CTranslate2 under the hood — 4x faster, 2x less RAM than openai-whisper
+MODEL_SIZE = os.getenv("MODEL_SIZE", "tiny")   # tiny=~75MB RAM | small=~240MB
+print(f"⏳ Loading Faster-Whisper model ({MODEL_SIZE})...")
+model = WhisperModel(MODEL_SIZE, device="cpu", compute_type="int8")
+print("✅ Faster-Whisper model loaded!")
 
 
 # ── Health Check ───────────────────────────────────────────────────────────────
@@ -37,7 +37,7 @@ print("✅ Whisper model loaded!")
 def health():
     return {
         "status": "ok",
-        "model": "whisper-small",
+        "model": f"faster-whisper-{MODEL_SIZE}",
         "description": "Dysarthria Speech Aid API is running",
     }
 
@@ -46,50 +46,63 @@ def health():
 @app.post("/transcribe")
 async def transcribe(audio: UploadFile = File(...)):
     """
-    Accepts an audio file (WAV/MP3/WEBM/OGG) and returns the Whisper transcription.
+    Accepts a WAV audio file and returns the Whisper transcription.
+    No ffmpeg needed — browser sends 16kHz mono WAV.
     """
-    # Read raw audio bytes
     contents = await audio.read()
 
     try:
         start = time.time()
 
-        # Load WAV audio into numpy array (no ffmpeg needed!)
+        # Load WAV → numpy array (no ffmpeg!)
         audio_buffer = io.BytesIO(contents)
         audio_array, sample_rate = sf.read(audio_buffer, dtype="float32")
 
-        # Convert stereo to mono if needed
+        # Stereo → mono
         if audio_array.ndim == 2:
             audio_array = audio_array.mean(axis=1)
 
-        # Resample to 16kHz if needed (Whisper expects 16kHz)
+        # Resample to 16kHz if needed
         if sample_rate != 16000:
             import scipy.signal as signal
             num_samples = int(len(audio_array) * 16000 / sample_rate)
             audio_array = signal.resample(audio_array, num_samples)
 
-        # Run Whisper inference directly on numpy array (no ffmpeg!)
-        result = model.transcribe(
-            audio_array,
+        # Save to temp WAV for faster-whisper (it needs a file path)
+        import tempfile
+        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+            import soundfile as sf2
+            sf2.write(tmp.name, audio_array, 16000)
+            tmp_path = tmp.name
+
+        # Run faster-whisper inference
+        segments_gen, info = model.transcribe(
+            tmp_path,
             task="transcribe",
-            language=None,
-            fp16=False,
-            verbose=False,
+            language=None,       # auto-detect
+            beam_size=5,
+            vad_filter=True,     # skip silent parts
         )
 
-        elapsed = round(time.time() - start, 2)
-        text = result.get("text", "").strip()
-        language = result.get("language", "unknown")
+        # Clean up temp file
+        os.remove(tmp_path)
 
-        # Build segments summary
+        # Collect results
+        elapsed = round(time.time() - start, 2)
         segments = []
-        for seg in result.get("segments", []):
+        full_text = []
+
+        for seg in segments_gen:
+            full_text.append(seg.text.strip())
             segments.append({
-                "start": round(seg["start"], 2),
-                "end": round(seg["end"], 2),
-                "text": seg["text"].strip(),
-                "confidence": round(1 - seg.get("no_speech_prob", 0), 3),
+                "start": round(seg.start, 2),
+                "end": round(seg.end, 2),
+                "text": seg.text.strip(),
+                "confidence": round(seg.avg_logprob + 1, 3),  # normalize logprob
             })
+
+        text = " ".join(full_text).strip()
+        language = info.language if info else "unknown"
 
         return JSONResponse({
             "success": True,
