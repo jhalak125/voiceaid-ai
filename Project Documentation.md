@@ -7,7 +7,7 @@
 * **Lead Developer:** Jhalak Verma
 * **Repository:** [https://github.com/jhalak125/voiceaid-ai](https://github.com/jhalak125/voiceaid-ai)
 * **Deployed Backend:**[https://voiceaid-ai.onrender.com/](https://voiceaid-ai.onrender.com/)
-* **Deployed Website:**[(https://voiceaid-ai.vercel.app/)](https://voiceaid-ai.vercel.app/)
+* **Deployed Website:**[https://voiceaid-ai.vercel.app/](https://voiceaid-ai.vercel.app/)
 
 ---
 
