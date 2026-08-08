@@ -1,5 +1,4 @@
-// ─────────────────────────────────────────────────────────────
-// PRODUCTION CONFIG — Update this URL after deploying to HF Spaces
-// Replace YOUR_HF_USERNAME with your actual Hugging Face username
-// ─────────────────────────────────────────────────────────────
-window.VOICEAID_API_URL = "https://YOUR_HF_USERNAME-voiceaid-ai.hf.space";
+// ── Production Config ──────────────────────────────────────────
+// Replace with your actual Render URL from the dashboard
+window.VOICEAID_API_URL = "https://voiceaid-ai.onrender.com";
+
